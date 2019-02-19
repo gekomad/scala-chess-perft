@@ -1,7 +1,7 @@
 scala-chess-perft
 ======
 
-Perft (performance test) is a debugging function to walk the chess move tree of strictly legal moves to count all the leaf nodes of a certain depth.
+**Perft** (performance test) is a debugging function to walk the chess move tree of strictly legal moves to count all the leaf nodes of a certain depth.
 
 
 ```  
@@ -63,8 +63,13 @@ side to move: White
 18)        g1-f3   5723523
 19)        b1-c3   5708064
 20)        b1-a3   4856835
+
 Tot 119060324 nodes in 13 seconds (9158k nodes per seconds)
 ```  
+
+## FP and Chess Programming
+
+In chess engine programming the efficiency is critical, millions of moves are calculate in one second so I have had sacrifice the FP purity :(
 
 ## License  
   
