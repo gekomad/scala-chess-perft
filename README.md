@@ -9,7 +9,7 @@ scala-chess-perft
   import com.github.gekomad.chessgengenerator.util.PrintAndSum
 
   val start = System.currentTimeMillis()
-  val l     = Perft.perft("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", depth = 6, printPartialResult = true)
+  val l     = Perft.perft("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", depth = 6)
   val end   = System.currentTimeMillis()
   val time  = (end - start) / 1000
   PrintAndSum.printAndSum(l, time)
