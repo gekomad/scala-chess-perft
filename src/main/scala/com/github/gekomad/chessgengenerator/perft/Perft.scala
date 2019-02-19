@@ -31,10 +31,10 @@ object Perft {
   }
 
   def perft(fen: String, depth: Int, printPartialResult: Boolean = false)
-    : Option[Seq[(String, BitmapPosition)]] =
-    GenMoves(fen, true).flatMap { g =>
+    : Option[(Long, Seq[(String, BitmapPosition)])] =
+    GenMoves(fen, true).map { g =>
       g.display()
-
+      val start = System.currentTimeMillis()
       val side = g.getSide
       val idList = 0
       val fhash = false
@@ -58,17 +58,17 @@ object Perft {
 
           } else {
             ChessBoard
-              .decodeBoardinv(move.type1, move.from, side) + (if (move.capturedPiece != SQUARE_FREE)
-                                                                '*'
-                                                              else '-') +
-              ChessBoard.decodeBoardinv(move.type1, move.to, side)
+              .decodeBoardinv(move.type1, move.from, side) +
+              (if (move.capturedPiece != SQUARE_FREE) '*' else '-') + ChessBoard
+              .decodeBoardinv(move.type1, move.to, side)
           }
         if (printPartialResult) println(h + " " + nPerft)
         (h, nPerft)
 
       }
+      val end = System.currentTimeMillis()
 
-      Some(res)
+      (end - start, res)
     }
 
 }

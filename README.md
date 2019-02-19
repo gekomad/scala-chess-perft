@@ -7,12 +7,13 @@ scala-chess-perft
 ```  
   import com.github.gekomad.chessgengenerator.perft.Perft
   import com.github.gekomad.chessgengenerator.util.PrintAndSum
+  import com.github.gekomad.chessgengenerator.core.ChessBoard.BitmapPosition
 
-  val start = System.currentTimeMillis()
-  val l     = Perft.perft("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", depth = 6)
-  val end   = System.currentTimeMillis()
-  val time  = (end - start) / 1000
-  PrintAndSum.printAndSum(l, time)
+  val l: Option[(Long, Seq[(String, BitmapPosition)])] =
+    Perft.perft(fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", depth = 6)
+
+  assert(PrintAndSum.sumAndPrint(l) == Some(119060324))
+
 ```
 ```
 

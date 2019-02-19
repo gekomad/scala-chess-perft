@@ -4,21 +4,23 @@ import com.github.gekomad.chessgengenerator.core.ChessBoard.BitmapPosition
 
 object PrintAndSum {
 
-  def printAndSum(l: Option[Seq[(String, BitmapPosition)]], s: Long = 0): Long = {
+  def sumAndPrint(
+      l: Option[(Long, Seq[(String, BitmapPosition)])]): Option[Long] = {
     println
-    l.map { x =>
+    l.map { z =>
+      val x = z._2
+      val time: Int = (z._1 / 1000).toInt
       val o = (x zip (1 to 10000)).map { a =>
         println(s"${a._2})\t${a._1._1}\t${a._1._2}")
         a._1._2
       }
       val tot = o.sum
-      print(s"Tot $tot nodes")
-      if (s != 0)
-        print(s" in $s seconds (${(tot / 1000) / s}k nodes per seconds)")
+      print(s"\nTot $tot nodes")
+      if (time != 0)
+        print(s" in $time seconds (${tot / time}k nodes per seconds)")
       println
-
       tot
     }
-  }.getOrElse(-1)
+  }
 
 }
