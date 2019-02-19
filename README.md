@@ -69,7 +69,7 @@ Tot 119060324 nodes in 13 seconds (9158k nodes per seconds)
 
 ## FP and Chess Programming
 
-In chess engine programming the efficiency is critical, millions of moves are calculate in one second so I have had sacrifice the FP purity :(
+In chess engine programming the efficiency is critical, millions of moves are calculate in one second so it is necessary to sacrifice the FP purity :(
 
 ## License  
   
