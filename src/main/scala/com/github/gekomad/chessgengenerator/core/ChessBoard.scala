@@ -9,35 +9,33 @@ import scala.annotation.tailrec
 
 case class ChessBoard private () {
 
-  val bitboards = Bitboards()
+  val bitboards                         = Bitboards()
   val chessboard: Array[BitmapPosition] = Array.ofDim[Long](16)
 
   def getBitmapNoPawns(side: Side): Long =
-    chessboard(ROOK_BLACK + side) | chessboard(BISHOP_BLACK + side) | chessboard(
-      KNIGHT_BLACK + side) | chessboard(KING_BLACK + side) | chessboard(
-      QUEEN_BLACK + side)
+    chessboard(ROOK_BLACK + side) | chessboard(BISHOP_BLACK + side) | chessboard(KNIGHT_BLACK + side) | chessboard(
+      KING_BLACK + side
+    ) | chessboard(QUEEN_BLACK + side)
 
   def zobristKey: BitmapPosition = chessboard(ZOBRISTKEY_IDX)
 
-  def getNpiecesNoPawnNoKing(side: Side): Int =
-    bitCount(
-      chessboard(ROOK_BLACK + side) | chessboard(BISHOP_BLACK + side) | chessboard(
-        KNIGHT_BLACK + side) | chessboard(QUEEN_BLACK + side))
+  def getNpiecesNoPawnNoKing(side: Side): Int = bitCount(
+    chessboard(ROOK_BLACK + side) | chessboard(BISHOP_BLACK + side) | chessboard(KNIGHT_BLACK + side) | chessboard(
+      QUEEN_BLACK + side
+    )
+  )
 
   def getBitmap(side: Side): Long =
-    chessboard(PAWN_BLACK + side) | chessboard(ROOK_BLACK + side) | chessboard(
-      BISHOP_BLACK + side) | chessboard(KNIGHT_BLACK + side) | chessboard(
-      KING_BLACK + side) | chessboard(QUEEN_BLACK + side)
+    chessboard(PAWN_BLACK + side) | chessboard(ROOK_BLACK + side) | chessboard(BISHOP_BLACK + side) | chessboard(
+      KNIGHT_BLACK + side
+    ) | chessboard(KING_BLACK + side) | chessboard(QUEEN_BLACK + side)
 
   def getPieceAt(side: Side, bitmapPos: BitmapPosition): Int =
     if ((bitmapPos & chessboard(PAWN_BLACK + side)) != 0) PAWN_BLACK + side
     else if ((bitmapPos & chessboard(ROOK_BLACK + side)) != 0) ROOK_BLACK + side
-    else if ((bitmapPos & chessboard(BISHOP_BLACK + side)) != 0)
-      BISHOP_BLACK + side
-    else if ((bitmapPos & chessboard(KNIGHT_BLACK + side)) != 0)
-      KNIGHT_BLACK + side
-    else if ((bitmapPos & chessboard(QUEEN_BLACK + side)) != 0)
-      QUEEN_BLACK + side
+    else if ((bitmapPos & chessboard(BISHOP_BLACK + side)) != 0) BISHOP_BLACK + side
+    else if ((bitmapPos & chessboard(KNIGHT_BLACK + side)) != 0) KNIGHT_BLACK + side
+    else if ((bitmapPos & chessboard(QUEEN_BLACK + side)) != 0) QUEEN_BLACK + side
     else if ((bitmapPos & chessboard(KING_BLACK + side)) != 0) KING_BLACK + side
     else SQUARE_FREE
 
@@ -46,13 +44,13 @@ case class ChessBoard private () {
 
   private def loadFen(fen: String): Option[Side] = {
 
-    val iss = fen.split(" ")
-    val pos = iss(0)
-    val side = iss(1)
-    val castle = iss(2)
+    val iss       = fen.split(" ")
+    val pos       = iss(0)
+    val side      = iss(1)
+    val castle    = iss(2)
     val enpassant = iss(3)
-    var ix = 0
-    val s = Array.ofDim[Int](64)
+    var ix        = 0
+    val s         = Array.ofDim[Int](64)
 
     pos.foreach { ch =>
       if (ch != '/') {
@@ -95,28 +93,24 @@ case class ChessBoard private () {
       castle(e) match {
         case 'K' =>
           updateZobristKey(RIGHT_CASTLE_IDX, 4)
-          assert(
-            BITScanForward(if (4 == RIGHT_KING_CASTLE_WHITE_MASK) 1 else 0) != 0)
+          assert(BITScanForward(if (4 == RIGHT_KING_CASTLE_WHITE_MASK) 1 else 0) != 0)
           chessboard(RIGHT_CASTLE_IDX) |= RIGHT_KING_CASTLE_WHITE_MASK
 
         case 'k' =>
           updateZobristKey(RIGHT_CASTLE_IDX, 6)
 
-          assert(
-            BITScanForward(if (6 == RIGHT_KING_CASTLE_BLACK_MASK) 1 else 0) != 0)
+          assert(BITScanForward(if (6 == RIGHT_KING_CASTLE_BLACK_MASK) 1 else 0) != 0)
           chessboard(RIGHT_CASTLE_IDX) |= RIGHT_KING_CASTLE_BLACK_MASK
 
         case 'Q' =>
           updateZobristKey(RIGHT_CASTLE_IDX, 5)
-          assert(BITScanForward(
-            if (5 == RIGHT_QUEEN_CASTLE_WHITE_MASK) 1 else 0) != 0)
+          assert(BITScanForward(if (5 == RIGHT_QUEEN_CASTLE_WHITE_MASK) 1 else 0) != 0)
 
           chessboard(RIGHT_CASTLE_IDX) |= RIGHT_QUEEN_CASTLE_WHITE_MASK
 
         case 'q' =>
           updateZobristKey(RIGHT_CASTLE_IDX, 7)
-          assert(BITScanForward(
-            if (7 == RIGHT_QUEEN_CASTLE_BLACK_MASK) 1 else 0) != 0)
+          assert(BITScanForward(if (7 == RIGHT_QUEEN_CASTLE_BLACK_MASK) 1 else 0) != 0)
 
           chessboard(RIGHT_CASTLE_IDX) |= RIGHT_QUEEN_CASTLE_BLACK_MASK
 
@@ -143,7 +137,7 @@ case class ChessBoard private () {
       var x = ' '
       if (t % 8 == 0) {
         print("\n   ----+---+---+---+---+---+---+----\n")
-        print((8 - RANK_AT(t)) + " | ")
+        print(s"${8 - RANK_AT(t)} | ")
       }
       val o = FEN_PIECE(getPieceAt(WHITE, POW2(63 - t)))
 
@@ -166,11 +160,11 @@ case class ChessBoard private () {
     println(
       "en passant position: " + (if (chessboard(ENPASSANT_IDX) == NO_ENPASSANT)
                                    "None"
-                                 else chessboard(ENPASSANT_IDX)))
+                                 else chessboard(ENPASSANT_IDX))
+    )
     println(s"right castle: ${chessboard(RIGHT_CASTLE_IDX)}")
 
-    println(
-      "side to move: " + ChessBoard.decodeSide(chessboard(SIDETOMOVE_IDX)))
+    println("side to move: " + ChessBoard.decodeSide(chessboard(SIDETOMOVE_IDX)))
   }
 
   def getSide: Side = chessboard(SIDETOMOVE_IDX).toInt
@@ -203,7 +197,7 @@ case class ChessBoard private () {
   def boardToFen: String = {
     var fen: String = ""
     (0 until 8).foreach { y =>
-      var l = 0
+      var l   = 0
       var row = ""
       (0 until 8).foreach { x =>
         var q = getPieceAt(BLACK, POW2(63 - ((y * 8) + x)))
@@ -284,15 +278,13 @@ object ChessBoard {
 
   def apply(): Option[ChessBoard] = ChessBoard(STARTPOS)
 
-  type Side = Int
-  type Position = Int
+  type Side           = Int
+  type Position       = Int
   type BitmapPosition = Long
 
-  private def getPieceByChar(c: Char): Int =
-    (0 until 12).find(c == FEN_PIECE(_)).getOrElse(-1)
+  private def getPieceByChar(c: Char): Option[Position] = (0 until 12).find(c == FEN_PIECE(_))
 
-  private def decodeBoard(a: String): Char =
-    (0 until 64).find(i => 0 == a.compare(BOARD(i))).getOrElse(???).toChar
+  private def decodeBoard(a: String): Option[Char] = (0 until 64).find(i => 0 == a.compare(BOARD(i))).map(_.toChar)
 
   def decodeType(p: Int): String = p & 0xf match {
     case STANDARD_MOVE_MASK          => "STANDARD_MOVE"
@@ -320,6 +312,7 @@ object ChessBoard {
   }
 
   def decodeBoardinv(type_ : Char, a: Position, side: Side): String = {
+    assert(a >= 0 && a < 64)
     if ((type_ & QUEEN_SIDE_CASTLE_MOVE_MASK) != 0 && side == WHITE)
       "e1c1"
     else if ((type_ & KING_SIDE_CASTLE_MOVE_MASK) != 0 && side == WHITE)
@@ -328,12 +321,6 @@ object ChessBoard {
       "e8c8"
     else if ((type_ & KING_SIDE_CASTLE_MOVE_MASK) != 0 && side == BLACK)
       "e8g8"
-    else {
-      if (a >= 0 && a < 64)
-        BOARD(a)
-      else ???
-    }
-
+    else BOARD(a)
   }
-
 }

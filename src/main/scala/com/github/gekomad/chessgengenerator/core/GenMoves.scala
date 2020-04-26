@@ -14,11 +14,11 @@ object GenMoves {
   private val MAX_REP_COUNT = 1024
 
   val MAX_MOVE = 130
-  val MAX_PLY = 96
+  val MAX_PLY  = 96
 
   trait _TmoveP {
     val moveList: Array[_Tmove] = Array.fill[_Tmove](MAX_MOVE)(new _Tmove {})
-    var size: Int = 0
+    var size: Int               = 0
   }
 
   trait _Tmove {
@@ -34,13 +34,13 @@ object GenMoves {
     }
 
     var promotionPiece: Char = 0
-    var pieceFrom: Char = 0
-    var capturedPiece: Char = 0
-    var from: Char = 0
-    var to: Char = 0
-    var side: Char = 0
-    var type1: Char = 0
-    var score: Int = 0
+    var pieceFrom: Char      = 0
+    var capturedPiece: Char  = 0
+    var from: Char           = 0
+    var to: Char             = 0
+    var side: Char           = 0
+    var type1: Char          = 0
+    var score: Int           = 0
 
     override def toString: String = {
       val f = ChessBoard.decodeBoardinv(type1, from, side)
@@ -62,10 +62,10 @@ import GenMoves._
 case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
 
   private var running: Int = 0
-  private val forceCheck = false
+  private val forceCheck   = false
 
-  private var numMoves = 0l
-  private var numMovesq = 0l
+  private var numMoves           = 0L
+  private var numMovesq          = 0L
   private var repetitionMapCount = 0
 
   def zobristKey: BitmapPosition = chessBoard.zobristKey
@@ -107,10 +107,7 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
     performKingShiftCapture(listId, side, ~allpieces)
   }
 
-  def generateCaptures(listId: Int,
-                       side: Side,
-                       enemies: Long,
-                       friends: Long): Boolean = {
+  def generateCaptures(listId: Int, side: Side, enemies: Long, friends: Long): Boolean = {
     assert(side == 0 || side == 1)
     assert(chessBoard.chessboard(KING_BLACK) != 0)
     assert(chessBoard.chessboard(KING_WHITE) != 0)
@@ -119,34 +116,15 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
       true
     else if (performKingShiftCapture(listId, side, enemies))
       true
-    else if (performKnightShiftCapture(listId,
-                                       KNIGHT_BLACK + side,
-                                       enemies,
-                                       side))
+    else if (performKnightShiftCapture(listId, KNIGHT_BLACK + side, enemies, side))
       true
-    else if (performDiagCapture(listId,
-                                BISHOP_BLACK + side,
-                                enemies,
-                                side,
-                                allpieces))
+    else if (performDiagCapture(listId, BISHOP_BLACK + side, enemies, side, allpieces))
       true
-    else if (performRankFileCapture(listId,
-                                    ROOK_BLACK + side,
-                                    enemies,
-                                    side,
-                                    allpieces))
+    else if (performRankFileCapture(listId, ROOK_BLACK + side, enemies, side, allpieces))
       true
-    else if (performRankFileCapture(listId,
-                                    QUEEN_BLACK + side,
-                                    enemies,
-                                    side,
-                                    allpieces))
+    else if (performRankFileCapture(listId, QUEEN_BLACK + side, enemies, side, allpieces))
       true
-    else if (performDiagCapture(listId,
-                                QUEEN_BLACK + side,
-                                enemies,
-                                side,
-                                allpieces))
+    else if (performDiagCapture(listId, QUEEN_BLACK + side, enemies, side, allpieces))
       true
     else
       false
@@ -154,16 +132,12 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
 
   val getForceCheck: Boolean = forceCheck
 
-  private def getDiagCapture(position: Position,
-                             allpieces: Long,
-                             enemies: Long): Long = {
+  private def getDiagCapture(position: Position, allpieces: Long, enemies: Long): Long = {
     assert(position >= 0 && position < 64)
     chessBoard.bitboards.getDiagonalAntiDiagonal(position, allpieces) & enemies
   }
 
-  private def getDiagShiftAndCapture(position: Position,
-                                     enemies: Long,
-                                     allpieces: Long): Long = {
+  private def getDiagShiftAndCapture(position: Position, enemies: Long, allpieces: Long): Long = {
     assert(position >= 0 && position < 64)
     val nuovo: Long =
       chessBoard.bitboards.getDiagonalAntiDiagonal(position, allpieces)
@@ -174,16 +148,14 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
     assert(position >= 0 && position < 64)
     bitCount(
       chessBoard.bitboards
-        .getDiagonalAntiDiagonal(position, allpieces) & ~allpieces)
+        .getDiagonalAntiDiagonal(position, allpieces) & ~allpieces
+    )
   }
 
-  private def performPawnCapture(listId: Int,
-                                 side: Side,
-                                 enemies: Long): Boolean = {
+  private def performPawnCapture(listId: Int, side: Side, enemies: Long): Boolean = {
     if (chessBoard.chessboard(side) == 0) {
       if (chessBoard.chessboard(ENPASSANT_IDX) != NO_ENPASSANT) {
-        chessBoard.updateZobristKey(13,
-                                    chessBoard.chessboard(ENPASSANT_IDX).toInt)
+        chessBoard.updateZobristKey(13, chessBoard.chessboard(ENPASSANT_IDX).toInt)
       }
       chessBoard.chessboard(ENPASSANT_IDX) = NO_ENPASSANT
       false
@@ -200,47 +172,17 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
         else {
           val o = BITScanForward(x)
           if ((side != 0 && o > 55) || (side == 0 && o < 8)) { //PROMOTION
-            if (pushmove(listId,
-                         PROMOTION_MOVE_MASK,
-                         o + of,
-                         o,
-                         side,
-                         QUEEN_BLACK + side,
-                         side))
+            if (pushmove(listId, PROMOTION_MOVE_MASK, o + of, o, side, QUEEN_BLACK + side, side))
               true //queen
             else if (perftMode) {
-              if (pushmove(listId,
-                           PROMOTION_MOVE_MASK,
-                           o + of,
-                           o,
-                           side,
-                           KNIGHT_BLACK + side,
-                           side))
+              if (pushmove(listId, PROMOTION_MOVE_MASK, o + of, o, side, KNIGHT_BLACK + side, side))
                 true //knight
-              else if (pushmove(listId,
-                                PROMOTION_MOVE_MASK,
-                                o + of,
-                                o,
-                                side,
-                                ROOK_BLACK + side,
-                                side))
+              else if (pushmove(listId, PROMOTION_MOVE_MASK, o + of, o, side, ROOK_BLACK + side, side))
                 true //rock
-              else if (pushmove(listId,
-                                PROMOTION_MOVE_MASK,
-                                o + of,
-                                o,
-                                side,
-                                BISHOP_BLACK + side,
-                                side))
+              else if (pushmove(listId, PROMOTION_MOVE_MASK, o + of, o, side, BISHOP_BLACK + side, side))
                 true //bishop
             } else false
-          } else if (pushmove(listId,
-                              STANDARD_MOVE_MASK,
-                              o + of,
-                              o,
-                              side,
-                              NO_PROMOTION,
-                              side)) {
+          } else if (pushmove(listId, STANDARD_MOVE_MASK, o + of, o, side, NO_PROMOTION, side)) {
             true
           }
           w(resetLSB(x), of)
@@ -249,60 +191,31 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
       else {
         val r2 =
           if (side != 0)
-            ((chessBoard
-               .chessboard(side) << 9) & TABCAPTUREPAWN_RIGHT & enemies,
-             -9)
+            (
+              (chessBoard
+                .chessboard(side) << 9) & TABCAPTUREPAWN_RIGHT & enemies,
+              -9
+            )
           else
-            ((chessBoard.chessboard(side) >> 9) & TABCAPTUREPAWN_LEFT & enemies,
-             9)
+            ((chessBoard.chessboard(side) >> 9) & TABCAPTUREPAWN_LEFT & enemies, 9)
         @tailrec
         def w2(x2: Long, of: Int): Boolean =
           if (x2 == 0) false
           else {
             val o = BITScanForward(x2)
             if ((side != 0 && o > 55) || (side == 0 && o < 8)) { //PROMOTION
-              if (pushmove(listId,
-                           PROMOTION_MOVE_MASK,
-                           o + of,
-                           o,
-                           side,
-                           QUEEN_BLACK + side,
-                           side))
+              if (pushmove(listId, PROMOTION_MOVE_MASK, o + of, o, side, QUEEN_BLACK + side, side))
                 true //queen
               else if (perftMode) {
-                if (pushmove(listId,
-                             PROMOTION_MOVE_MASK,
-                             o + of,
-                             o,
-                             side,
-                             KNIGHT_BLACK + side,
-                             side))
+                if (pushmove(listId, PROMOTION_MOVE_MASK, o + of, o, side, KNIGHT_BLACK + side, side))
                   true //knight
-                else if (pushmove(listId,
-                                  PROMOTION_MOVE_MASK,
-                                  o + of,
-                                  o,
-                                  side,
-                                  BISHOP_BLACK + side,
-                                  side))
+                else if (pushmove(listId, PROMOTION_MOVE_MASK, o + of, o, side, BISHOP_BLACK + side, side))
                   true //bishop
-                else if (pushmove(listId,
-                                  PROMOTION_MOVE_MASK,
-                                  o + of,
-                                  o,
-                                  side,
-                                  ROOK_BLACK + side,
-                                  side))
+                else if (pushmove(listId, PROMOTION_MOVE_MASK, o + of, o, side, ROOK_BLACK + side, side))
                   true //rock
 
               } else false
-            } else if (pushmove(listId,
-                                STANDARD_MOVE_MASK,
-                                o + of,
-                                o,
-                                side,
-                                NO_PROMOTION,
-                                side))
+            } else if (pushmove(listId, STANDARD_MOVE_MASK, o + of, o, side, NO_PROMOTION, side))
               true
 
             w2(resetLSB(x2), of)
@@ -311,27 +224,18 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
         else {
           //ENPASSANT
           if (chessBoard.chessboard(ENPASSANT_IDX) != NO_ENPASSANT) {
-            val x3 = ENPASSANT_MASK(side ^ 1)(
-              chessBoard.chessboard(ENPASSANT_IDX).toInt) & chessBoard
+            val x3 = ENPASSANT_MASK(side ^ 1)(chessBoard.chessboard(ENPASSANT_IDX).toInt) & chessBoard
               .chessboard(side)
             @tailrec
             def go(x: Long): Unit = if (x != 0) {
               val o = BITScanForward(x)
               val k = (if (side != 0) chessBoard.chessboard(ENPASSANT_IDX) + 8
                        else chessBoard.chessboard(ENPASSANT_IDX) - 8).toInt
-              pushmove(listId,
-                       ENPASSANT_MOVE_MASK,
-                       o,
-                       k,
-                       side,
-                       NO_PROMOTION,
-                       side)
+              pushmove(listId, ENPASSANT_MOVE_MASK, o, k, side, NO_PROMOTION, side)
               go(resetLSB(x))
             }
             go(x3)
-            chessBoard.updateZobristKey(
-              13,
-              chessBoard.chessboard(ENPASSANT_IDX).toInt)
+            chessBoard.updateZobristKey(13, chessBoard.chessboard(ENPASSANT_IDX).toInt)
             chessBoard.chessboard(ENPASSANT_IDX) = NO_ENPASSANT
           }
           false
@@ -340,9 +244,7 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
     }
   }
 
-  private def performPawnShift(listId: Int,
-                               side: Side,
-                               xallpieces: Long): Unit = {
+  private def performPawnShift(listId: Int, side: Side, xallpieces: Long): Unit = {
     val x1 = chessBoard.chessboard(side)
     if ((x1 & PAWNS_JUMP(side)) != 0) {
       checkJumpPawn(listId, side, x1, xallpieces)
@@ -359,44 +261,14 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
       assert(chessBoard.getPieceAt(side, POW2(o + tt)) != SQUARE_FREE)
       assert((chessBoard.getBitmap(side) & POW2(o + tt)) != 0)
       if (o > 55 || o < 8) {
-        pushmove(listId,
-                 PROMOTION_MOVE_MASK,
-                 o + tt,
-                 o,
-                 side,
-                 QUEEN_BLACK + side,
-                 side)
+        pushmove(listId, PROMOTION_MOVE_MASK, o + tt, o, side, QUEEN_BLACK + side, side)
         if (perftMode) {
-          pushmove(listId,
-                   PROMOTION_MOVE_MASK,
-                   o + tt,
-                   o,
-                   side,
-                   KNIGHT_BLACK + side,
-                   side)
-          pushmove(listId,
-                   PROMOTION_MOVE_MASK,
-                   o + tt,
-                   o,
-                   side,
-                   BISHOP_BLACK + side,
-                   side)
-          pushmove(listId,
-                   PROMOTION_MOVE_MASK,
-                   o + tt,
-                   o,
-                   side,
-                   ROOK_BLACK + side,
-                   side)
+          pushmove(listId, PROMOTION_MOVE_MASK, o + tt, o, side, KNIGHT_BLACK + side, side)
+          pushmove(listId, PROMOTION_MOVE_MASK, o + tt, o, side, BISHOP_BLACK + side, side)
+          pushmove(listId, PROMOTION_MOVE_MASK, o + tt, o, side, ROOK_BLACK + side, side)
         }
       } else {
-        pushmove(listId,
-                 STANDARD_MOVE_MASK,
-                 o + tt,
-                 o,
-                 side,
-                 NO_PROMOTION,
-                 side)
+        pushmove(listId, STANDARD_MOVE_MASK, o + tt, o, side, NO_PROMOTION, side)
       }
       go(resetLSB(x))
     }
@@ -405,14 +277,11 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
 
   def getListSize(listId: Int): Int = genList(listId).size
 
-  private def pushStackMove(): Unit =
-    pushStackMove(chessBoard.chessboard(ZOBRISTKEY_IDX))
+  private def pushStackMove(): Unit = pushStackMove(chessBoard.chessboard(ZOBRISTKEY_IDX))
 
   private def resetList(listId: Int): Unit = genList(listId).size = 0
 
-  private def incKillerHeuristic(from: Position,
-                                 to: Position,
-                                 value: Int): Unit = {
+  private def incKillerHeuristic(from: Position, to: Position, value: Int): Unit = {
     if (getRunning != 0) {
       assert(from > 0 && from < 64)
       assert(to > 0 && to < 64)
@@ -421,23 +290,21 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
     }
   }
 
-  private def isAttacked(side: Side,
-                         position: Position,
-                         allpieces: Long): Boolean =
+  private def isAttacked(side: Side, position: Position, allpieces: Long): Boolean =
     getAttackers(side, exitOnFirst = true, position, allpieces) != 0
 
-  private def getAllAttackers(side: Side,
-                              position: Position,
-                              allpieces: Long): Long =
+  private def getAllAttackers(side: Side, position: Position, allpieces: Long): Long =
     getAttackers(side, exitOnFirst = false, position, allpieces)
 
-  private def inCheck(side: Side,
-                      type1: Char,
-                      from: Position,
-                      to: Position,
-                      pieceFrom: Position,
-                      pieceTo: Position,
-                      promotionPiece: Int): Boolean = {
+  private def inCheck(
+    side: Side,
+    type1: Char,
+    from: Position,
+    to: Position,
+    pieceFrom: Position,
+    pieceTo: Position,
+    promotionPiece: Int
+  ): Boolean = {
 
     assert(from >= 0 && from < 64)
     assert(to >= 0 && to < 64)
@@ -457,7 +324,7 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
           val to1 = chessBoard.chessboard(pieceTo)
           chessBoard.chessboard(pieceTo) &= NOTPOW2(to)
           to1
-        } else -1l
+        } else -1L
         chessBoard.chessboard(pieceFrom) &= NOTPOW2(from)
         chessBoard.chessboard(pieceFrom) |= POW2(to)
         assert(chessBoard.chessboard(KING_BLACK) != 0)
@@ -466,32 +333,33 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
         val result = isAttacked(
           side,
           BITScanForward(chessBoard.chessboard(KING_BLACK + side)),
-          chessBoard.getBitmap(BLACK) | chessBoard.getBitmap(WHITE))
+          chessBoard.getBitmap(BLACK) | chessBoard.getBitmap(WHITE)
+        )
         chessBoard.chessboard(pieceFrom) = from1
         if (pieceTo != SQUARE_FREE) chessBoard.chessboard(pieceTo) = to1
         result
       case PROMOTION_MOVE_MASK =>
         val to1 =
-          if (pieceTo != SQUARE_FREE) chessBoard.chessboard(pieceTo) else 0l
+          if (pieceTo != SQUARE_FREE) chessBoard.chessboard(pieceTo) else 0L
         val from1 = chessBoard.chessboard(pieceFrom)
-        val p1 = chessBoard.chessboard(promotionPiece)
+        val p1    = chessBoard.chessboard(promotionPiece)
         chessBoard.chessboard(pieceFrom) &= NOTPOW2(from)
         if (pieceTo != SQUARE_FREE)
           chessBoard.chessboard(pieceTo) &= NOTPOW2(to)
 
-        chessBoard.chessboard(promotionPiece) = chessBoard.chessboard(
-          promotionPiece) | POW2(to)
+        chessBoard.chessboard(promotionPiece) = chessBoard.chessboard(promotionPiece) | POW2(to)
         val result = isAttacked(
           side,
           BITScanForward(chessBoard.chessboard(KING_BLACK + side)),
-          chessBoard.getBitmap(BLACK) | chessBoard.getBitmap(WHITE))
+          chessBoard.getBitmap(BLACK) | chessBoard.getBitmap(WHITE)
+        )
         if (pieceTo != SQUARE_FREE) chessBoard.chessboard(pieceTo) = to1
 
         chessBoard.chessboard(pieceFrom) = from1
         chessBoard.chessboard(promotionPiece) = p1
         result
       case ENPASSANT_MOVE_MASK =>
-        val to1 = chessBoard.chessboard(side ^ 1)
+        val to1   = chessBoard.chessboard(side ^ 1)
         val from1 = chessBoard.chessboard(side)
         chessBoard.chessboard(side) &= NOTPOW2(from)
         chessBoard.chessboard(side) |= POW2(to)
@@ -503,7 +371,8 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
         val result = isAttacked(
           side,
           BITScanForward(chessBoard.chessboard(KING_BLACK + side)),
-          chessBoard.getBitmap(BLACK) | chessBoard.getBitmap(WHITE))
+          chessBoard.getBitmap(BLACK) | chessBoard.getBitmap(WHITE)
+        )
         chessBoard.chessboard(side ^ 1) = to1
         chessBoard.chessboard(side) = from1
         result
@@ -513,18 +382,20 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
     result1
   }
 
-  private def pushmove(listId: Int,
-                       type1: Char,
-                       from: Position,
-                       to: Position,
-                       side: Side,
-                       promotionPiece: Int,
-                       pieceFrom: Int): Boolean = {
+  private def pushmove(
+    listId: Int,
+    type1: Char,
+    from: Position,
+    to: Position,
+    side: Side,
+    promotionPiece: Int,
+    pieceFrom: Int
+  ): Boolean = {
 
     assert(chessBoard.chessboard(KING_BLACK) != 0)
     assert(chessBoard.chessboard(KING_WHITE) != 0)
     var piece_captured = SQUARE_FREE
-    var res = false
+    var res            = false
     if (((type1 & 0x3) != ENPASSANT_MOVE_MASK) && 0 == (type1 & 0xc)) {
       piece_captured =
         if (side != 0) chessBoard.getPieceAt(BLACK, POW2(to))
@@ -537,13 +408,7 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
     }
     val i = if ((type1 & 0xc) == 0 && (forceCheck || perftMode)) { //no castle
 
-      if (inCheck(side,
-                  type1,
-                  from,
-                  to,
-                  pieceFrom,
-                  piece_captured,
-                  promotionPiece))
+      if (inCheck(side, type1, from, to, pieceFrom, piece_captured, promotionPiece))
         false
       else true
     } else true
@@ -555,8 +420,7 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
       assert(getListSize(listId) < MAX_MOVE)
       val mos: _Tmove = genList(listId).moveList(getListSize(listId))
       genList(listId).size += 1
-      mos.type1 =
-        (chessBoard.chessboard(RIGHT_CASTLE_IDX).toInt | type1.toInt).toChar
+      mos.type1 = (chessBoard.chessboard(RIGHT_CASTLE_IDX).toInt | type1.toInt).toChar
       mos.side = side.toChar
       mos.capturedPiece = piece_captured.toChar
       if ((type1 & 0x3) != 0) {
@@ -574,10 +438,8 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
             assert(to >= 0 && to < 64)
             mos.score = killerHeuristic(from)(to)
 
-            mos.score += (if (PIECES_VALUE(piece_captured) >= PIECES_VALUE(
-                                pieceFrom))
-                            (PIECES_VALUE(piece_captured) - PIECES_VALUE(
-                              pieceFrom)) * 2
+            mos.score += (if (PIECES_VALUE(piece_captured) >= PIECES_VALUE(pieceFrom))
+                            (PIECES_VALUE(piece_captured) - PIECES_VALUE(pieceFrom)) * 2
                           else PIECES_VALUE(piece_captured))
 
           }
@@ -599,13 +461,13 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
   private def getRunning: Int = running
 
   private def inCheck(side: Side): Boolean =
-    isAttacked(side,
-               BITScanForward(chessBoard.chessboard(KING_BLACK + side)),
-               chessBoard.getBitmap(BLACK) | chessBoard.getBitmap(WHITE))
+    isAttacked(
+      side,
+      BITScanForward(chessBoard.chessboard(KING_BLACK + side)),
+      chessBoard.getBitmap(BLACK) | chessBoard.getBitmap(WHITE)
+    )
 
-  private def setKillerHeuristic(from: Position,
-                                 to: Position,
-                                 value: Int): Unit = {
+  private def setKillerHeuristic(from: Position, to: Position, value: Int): Unit = {
     if (getRunning != 0) {
       assert(from > 0 && from < 64)
       assert(to > 0 && to < 64)
@@ -613,10 +475,7 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
     }
   }
 
-  private def checkJumpPawn(listId: Int,
-                            side: Side,
-                            x1: Long,
-                            xallpieces: Long): Unit = {
+  private def checkJumpPawn(listId: Int, side: Side, x1: Long, xallpieces: Long): Unit = {
     val y = x1 & TABJUMPPAWN
     val x =
       if (side != 0)
@@ -627,13 +486,7 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
     @tailrec
     def go(x: Long): Unit = if (x != 0) {
       val o: Position = BITScanForward(x)
-      pushmove(listId,
-               STANDARD_MOVE_MASK,
-               o + (if (side != 0) -16 else 16),
-               o,
-               side,
-               NO_PROMOTION,
-               side)
+      pushmove(listId, STANDARD_MOVE_MASK, o + (if (side != 0) -16 else 16), o, side, NO_PROMOTION, side)
       go(resetLSB(x))
     }
 
@@ -655,11 +508,7 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
     repetitionMapCount += 1
   }
 
-  private def performRankFileCapture(listId: Int,
-                                     piece: Int,
-                                     enemies: Long,
-                                     side: Int,
-                                     allpieces: Long): Boolean = {
+  private def performRankFileCapture(listId: Int, piece: Int, enemies: Long, side: Int, allpieces: Long): Boolean = {
     assert(piece >= 0 && piece < 12)
     assert(side == 0 || side == 1)
 
@@ -673,13 +522,7 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
         def w(rankFile: Long): Boolean =
           if (rankFile == 0) false
           else {
-            if (pushmove(listId,
-                         STANDARD_MOVE_MASK,
-                         position,
-                         BITScanForward(rankFile),
-                         side,
-                         NO_PROMOTION,
-                         piece))
+            if (pushmove(listId, STANDARD_MOVE_MASK, position, BITScanForward(rankFile), side, NO_PROMOTION, piece))
               true
             else
               w(resetLSB(rankFile))
@@ -694,20 +537,14 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
 
   }
 
-  private def performRankFileCaptureAndShiftCount(position: Position,
-                                                  enemies: Long,
-                                                  allpieces: Long): Int = {
+  private def performRankFileCaptureAndShiftCount(position: Position, enemies: Long, allpieces: Long): Int = {
     assert(position >= 0 && position < 64)
     val rankFile2 = chessBoard.bitboards.getRankFile(position, allpieces)
     val rankFile1 = (rankFile2 & enemies) | (rankFile2 & ~allpieces)
     bitCount(rankFile1)
   }
 
-  private def performDiagCapture(listId: Int,
-                                 piece: Int,
-                                 enemies: Long,
-                                 side: Side,
-                                 allpieces: Long): Boolean = {
+  private def performDiagCapture(listId: Int, piece: Int, enemies: Long, side: Side, allpieces: Long): Boolean = {
     assert(piece >= 0 && piece < 12)
     assert(side == 0 || side == 1)
 
@@ -720,17 +557,13 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
         @tailrec
         def w(diag: Long): Boolean =
           if (diag == 0) false
-          else if (pushmove(listId,
-                            STANDARD_MOVE_MASK,
-                            position,
-                            BITScanForward(diag),
-                            side,
-                            NO_PROMOTION,
-                            piece))
+          else if (pushmove(listId, STANDARD_MOVE_MASK, position, BITScanForward(diag), side, NO_PROMOTION, piece))
             true
           else w(resetLSB(diag))
-        if (w(chessBoard.bitboards
-              .getDiagonalAntiDiagonal(position, allpieces) & enemies)) true
+        if (w(
+              chessBoard.bitboards
+                .getDiagonalAntiDiagonal(position, allpieces) & enemies
+            )) true
         else
           w2(resetLSB(x2))
       }
@@ -738,10 +571,7 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
 
   }
 
-  private def performRankFileShift(listId: Int,
-                                   piece: Int,
-                                   side: Side,
-                                   allpieces: Long): Unit = {
+  private def performRankFileShift(listId: Int, piece: Int, side: Side, allpieces: Long): Unit = {
     assert(piece >= 0 && piece < 12)
     assert(side == 0 || side == 1)
     @tailrec
@@ -752,13 +582,7 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
       @tailrec
       def go2(rankFile: Long): Unit = if (rankFile != 0) {
 
-        pushmove(listId,
-                 STANDARD_MOVE_MASK,
-                 position,
-                 BITScanForward(rankFile),
-                 side,
-                 NO_PROMOTION,
-                 piece)
+        pushmove(listId, STANDARD_MOVE_MASK, position, BITScanForward(rankFile), side, NO_PROMOTION, piece)
         go2(resetLSB(rankFile))
       }
       go2(rankFile)
@@ -769,10 +593,7 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
 
   }
 
-  private def performDiagShift(listId: Int,
-                               piece: Int,
-                               side: Side,
-                               allpieces: Long): Unit = {
+  private def performDiagShift(listId: Int, piece: Int, side: Side, allpieces: Long): Unit = {
     assert(piece >= 0 && piece < 12)
     assert(side == 0 || side == 1)
 
@@ -785,13 +606,7 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
 
       @tailrec
       def go2(diag: Long): Unit = if (diag != 0) {
-        pushmove(listId,
-                 STANDARD_MOVE_MASK,
-                 position,
-                 BITScanForward(diag),
-                 side,
-                 NO_PROMOTION,
-                 piece)
+        pushmove(listId, STANDARD_MOVE_MASK, position, BITScanForward(diag), side, NO_PROMOTION, piece)
         go2(resetLSB(diag))
       }
       go2(diag)
@@ -800,48 +615,36 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
     go(chessBoard.chessboard(piece))
   }
 
-  private def generateMoves(listId: Int,
-                            piece: Int,
-                            side: Side,
-                            allpieces: Long): Unit = {
+  private def generateMoves(listId: Int, piece: Int, side: Side, allpieces: Long): Unit = {
     assert(side == 0 || side == 1)
     if (side != 0) generateMoves(listId, WHITE, allpieces)
     else generateMoves(listId, BLACK, allpieces)
   }
 
-  private def getMobilityPawns(side: Side,
-                               ep: Int,
-                               ped_friends: Long,
-                               enemies: Long,
-                               xallpieces: Long): Int = {
+  private def getMobilityPawns(side: Side, ep: Int, ped_friends: Long, enemies: Long, xallpieces: Long): Int = {
     assert(side == 0 || side == 1)
     if (ep == NO_ENPASSANT) 0
-    else if (bitCount(ENPASSANT_MASK(side ^ 1)(ep) & chessBoard.chessboard(
-               side)) + side == WHITE)
+    else if (bitCount(ENPASSANT_MASK(side ^ 1)(ep) & chessBoard.chessboard(side)) + side == WHITE)
       bitCount((ped_friends << 8) & xallpieces) + bitCount(
-        ((((ped_friends & TABJUMPPAWN) << 8) & xallpieces) << 8) & xallpieces) + bitCount(
-        (chessBoard.chessboard(side) << 7) & TABCAPTUREPAWN_LEFT & enemies
-      ) + bitCount(
-        (chessBoard.chessboard(side) << 9) & TABCAPTUREPAWN_RIGHT & enemies)
+        ((((ped_friends & TABJUMPPAWN) << 8) & xallpieces) << 8) & xallpieces
+      ) + bitCount((chessBoard.chessboard(side) << 7) & TABCAPTUREPAWN_LEFT & enemies) + bitCount(
+        (chessBoard.chessboard(side) << 9) & TABCAPTUREPAWN_RIGHT & enemies
+      )
     else
       bitCount((ped_friends >> 8) & xallpieces) + bitCount(
-        ((((ped_friends & TABJUMPPAWN) >> 8) & xallpieces) >> 8) & xallpieces) + bitCount(
-        (chessBoard.chessboard(side) >> 7) & TABCAPTUREPAWN_RIGHT & enemies
-      ) + bitCount(
-        (chessBoard.chessboard(side) >> 9) & TABCAPTUREPAWN_LEFT & enemies)
+        ((((ped_friends & TABJUMPPAWN) >> 8) & xallpieces) >> 8) & xallpieces
+      ) + bitCount((chessBoard.chessboard(side) >> 7) & TABCAPTUREPAWN_RIGHT & enemies) + bitCount(
+        (chessBoard.chessboard(side) >> 9) & TABCAPTUREPAWN_LEFT & enemies
+      )
   }
 
-  private def getMobilityQueen(position: Position,
-                               enemies: Long,
-                               allpieces: Long): Int = {
+  private def getMobilityQueen(position: Position, enemies: Long, allpieces: Long): Int = {
     assert(position >= 0 && position < 64)
     performRankFileCaptureAndShiftCount(position, enemies, allpieces) +
       bitCount(getDiagShiftAndCapture(position, enemies, allpieces))
   }
 
-  private def getMobilityRook(position: Position,
-                              enemies: Long,
-                              friends: Long): Int = {
+  private def getMobilityRook(position: Position, enemies: Long, friends: Long): Int = {
     assert(position >= 0 && position < 64)
     performRankFileCaptureAndShiftCount(position, enemies, enemies | friends)
   }
@@ -912,47 +715,37 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
     if (side == WHITE) {
       if ((POW2_3 & chessBoard.chessboard(KING_WHITE)) != 0 && ((allpieces & 0x6L) == 0) && (chessBoard
             .chessboard(RIGHT_CASTLE_IDX) & RIGHT_KING_CASTLE_WHITE_MASK) != 0
-          && (chessBoard.chessboard(ROOK_WHITE) & POW2_0) != 0 && !isAttacked(
+          && (chessBoard.chessboard(ROOK_WHITE) & POW2_0) != 0 && !isAttacked(WHITE, 1, allpieces) && !isAttacked(
             WHITE,
-            1,
-            allpieces) && !isAttacked(WHITE, 2, allpieces) && !isAttacked(
-            WHITE,
-            3,
-            allpieces)) {
+            2,
+            allpieces
+          ) && !isAttacked(WHITE, 3, allpieces)) {
         count += 1
       }
       if ((POW2_3 & chessBoard.chessboard(KING_WHITE)) != 0 && ((allpieces & 0x70L) == 0) && (chessBoard
             .chessboard(RIGHT_CASTLE_IDX) & RIGHT_QUEEN_CASTLE_WHITE_MASK) != 0
-          && (chessBoard.chessboard(ROOK_WHITE) & POW2_7) != 0 && !isAttacked(
+          && (chessBoard.chessboard(ROOK_WHITE) & POW2_7) != 0 && !isAttacked(WHITE, 3, allpieces) && !isAttacked(
             WHITE,
-            3,
-            allpieces) && !isAttacked(WHITE, 4, allpieces) && !isAttacked(
-            WHITE,
-            5,
-            allpieces)) {
+            4,
+            allpieces
+          ) && !isAttacked(WHITE, 5, allpieces)) {
         count += 1
       }
     } else {
-      if ((POW2_59 & chessBoard.chessboard(KING_BLACK)) != 0 && (chessBoard.chessboard(
-            RIGHT_CASTLE_IDX) & RIGHT_KING_CASTLE_BLACK_MASK) != 0 && ((allpieces & 0x600000000000000L) == 0)
-          && (chessBoard.chessboard(ROOK_BLACK) & POW2_56) != 0 && !isAttacked(
+      if ((POW2_59 & chessBoard.chessboard(KING_BLACK)) != 0 && (chessBoard.chessboard(RIGHT_CASTLE_IDX) & RIGHT_KING_CASTLE_BLACK_MASK) != 0 && ((allpieces & 0x600000000000000L) == 0)
+          && (chessBoard.chessboard(ROOK_BLACK) & POW2_56) != 0 && !isAttacked(BLACK, 57, allpieces) && !isAttacked(
             BLACK,
-            57,
-            allpieces) && !isAttacked(BLACK, 58, allpieces) && !isAttacked(
-            BLACK,
-            59,
-            allpieces)) {
+            58,
+            allpieces
+          ) && !isAttacked(BLACK, 59, allpieces)) {
         count += 1
       }
-      if ((POW2_59 & chessBoard.chessboard(KING_BLACK)) != 0 && (chessBoard.chessboard(
-            RIGHT_CASTLE_IDX) & RIGHT_QUEEN_CASTLE_BLACK_MASK) != 0 && ((allpieces & 0x7000000000000000L) == 0)
-          && (chessBoard.chessboard(ROOK_BLACK) & POW2_63) != 0 && !isAttacked(
+      if ((POW2_59 & chessBoard.chessboard(KING_BLACK)) != 0 && (chessBoard.chessboard(RIGHT_CASTLE_IDX) & RIGHT_QUEEN_CASTLE_BLACK_MASK) != 0 && ((allpieces & 0x7000000000000000L) == 0)
+          && (chessBoard.chessboard(ROOK_BLACK) & POW2_63) != 0 && !isAttacked(BLACK, 59, allpieces) && !isAttacked(
             BLACK,
-            59,
-            allpieces) && !isAttacked(BLACK, 60, allpieces) && !isAttacked(
-            BLACK,
-            61,
-            allpieces)) {
+            60,
+            allpieces
+          ) && !isAttacked(BLACK, 61, allpieces)) {
         count += 1
       }
     }
@@ -965,73 +758,50 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
     if (side == WHITE) {
       if ((POW2_3 & chessBoard.chessboard(KING_WHITE)) != 0 && 0 == (allpieces & 0x6L) && (chessBoard
             .chessboard(RIGHT_CASTLE_IDX) & RIGHT_KING_CASTLE_WHITE_MASK) != 0
-          && (chessBoard.chessboard(ROOK_WHITE) & POW2_0) != 0 && !isAttacked(
+          && (chessBoard.chessboard(ROOK_WHITE) & POW2_0) != 0 && !isAttacked(WHITE, 1, allpieces) && !isAttacked(
             WHITE,
-            1,
-            allpieces) && !isAttacked(WHITE, 2, allpieces) &&
+            2,
+            allpieces
+          ) &&
           !isAttacked(WHITE, 3, allpieces)) {
-        pushmove(listId,
-                 KING_SIDE_CASTLE_MOVE_MASK,
-                 -1,
-                 -1,
-                 WHITE,
-                 NO_PROMOTION,
-                 -1)
+        pushmove(listId, KING_SIDE_CASTLE_MOVE_MASK, -1, -1, WHITE, NO_PROMOTION, -1)
       }
       if ((POW2_3 & chessBoard.chessboard(KING_WHITE)) != 0 && 0 == (allpieces & 0x70L) && (chessBoard
             .chessboard(RIGHT_CASTLE_IDX) & RIGHT_QUEEN_CASTLE_WHITE_MASK) != 0
-          && (chessBoard.chessboard(ROOK_WHITE) & POW2_7) != 0 && !isAttacked(
+          && (chessBoard.chessboard(ROOK_WHITE) & POW2_7) != 0 && !isAttacked(WHITE, 3, allpieces) && !isAttacked(
             WHITE,
-            3,
-            allpieces) && !isAttacked(WHITE, 4, allpieces) &&
+            4,
+            allpieces
+          ) &&
           !isAttacked(WHITE, 5, allpieces)) {
-        pushmove(listId,
-                 QUEEN_SIDE_CASTLE_MOVE_MASK,
-                 -1,
-                 -1,
-                 WHITE,
-                 NO_PROMOTION,
-                 -1)
+        pushmove(listId, QUEEN_SIDE_CASTLE_MOVE_MASK, -1, -1, WHITE, NO_PROMOTION, -1)
       }
     } else {
       if ((POW2_59 & chessBoard.chessboard(KING_BLACK)) != 0 && (chessBoard
             .chessboard(RIGHT_CASTLE_IDX) & RIGHT_KING_CASTLE_BLACK_MASK) != 0 &&
-          0 == (allpieces & 0x600000000000000L) && (chessBoard.chessboard(
-            ROOK_BLACK) & POW2_56) != 0 && !isAttacked(BLACK, 57, allpieces) &&
-          !isAttacked(BLACK, 58, allpieces) && !isAttacked(BLACK,
-                                                           59,
-                                                           allpieces)) {
-        pushmove(listId,
-                 KING_SIDE_CASTLE_MOVE_MASK,
-                 -1,
-                 -1,
-                 BLACK,
-                 NO_PROMOTION,
-                 -1)
+          0 == (allpieces & 0x600000000000000L) && (chessBoard.chessboard(ROOK_BLACK) & POW2_56) != 0 && !isAttacked(
+            BLACK,
+            57,
+            allpieces
+          ) &&
+          !isAttacked(BLACK, 58, allpieces) && !isAttacked(BLACK, 59, allpieces)) {
+        pushmove(listId, KING_SIDE_CASTLE_MOVE_MASK, -1, -1, BLACK, NO_PROMOTION, -1)
       }
       if ((POW2_59 & chessBoard.chessboard(KING_BLACK)) != 0 && (chessBoard
             .chessboard(RIGHT_CASTLE_IDX) & RIGHT_QUEEN_CASTLE_BLACK_MASK) != 0
-          && 0 == (allpieces & 0x7000000000000000L) && (chessBoard.chessboard(
-            ROOK_BLACK) & POW2_63) != 0 && !isAttacked(BLACK, 59, allpieces)
-          && !isAttacked(BLACK, 60, allpieces) && !isAttacked(BLACK,
-                                                              61,
-                                                              allpieces)) {
-        pushmove(listId,
-                 QUEEN_SIDE_CASTLE_MOVE_MASK,
-                 -1,
-                 -1,
-                 BLACK,
-                 NO_PROMOTION,
-                 -1)
+          && 0 == (allpieces & 0x7000000000000000L) && (chessBoard.chessboard(ROOK_BLACK) & POW2_63) != 0 && !isAttacked(
+            BLACK,
+            59,
+            allpieces
+          )
+          && !isAttacked(BLACK, 60, allpieces) && !isAttacked(BLACK, 61, allpieces)) {
+        pushmove(listId, QUEEN_SIDE_CASTLE_MOVE_MASK, -1, -1, BLACK, NO_PROMOTION, -1)
       }
     }
 
   }
 
-  private def performKnightShiftCapture(listId: Int,
-                                        piece: Int,
-                                        enemies: Long,
-                                        side: Side): Boolean = {
+  private def performKnightShiftCapture(listId: Int, piece: Int, enemies: Long, side: Side): Boolean = {
     assert(piece >= 0 && piece < 12)
     assert(side == 0 || side == 1)
 
@@ -1044,13 +814,7 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
         @tailrec
         def w1(x1: Long): Boolean =
           if (x1 == 0) false
-          else if (pushmove(listId,
-                            STANDARD_MOVE_MASK,
-                            pos,
-                            BITScanForward(x1),
-                            side,
-                            NO_PROMOTION,
-                            piece))
+          else if (pushmove(listId, STANDARD_MOVE_MASK, pos, BITScanForward(x1), side, NO_PROMOTION, piece))
             true
           else w1(resetLSB(x1))
         if (w1(enemies & KNIGHT_MASK(pos))) true
@@ -1062,9 +826,7 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
 
   }
 
-  private def performKingShiftCapture(listId: Int,
-                                      side: Side,
-                                      enemies: Long): Boolean = {
+  private def performKingShiftCapture(listId: Int, side: Side, enemies: Long): Boolean = {
     assert(side == 0 || side == 1)
     val pos = BITScanForward(chessBoard.chessboard(KING_BLACK + side))
     assert(pos != -1)
@@ -1072,13 +834,7 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
     @tailrec
     def w1(x1: Long): Boolean =
       if (x1 == 0) false
-      else if (pushmove(listId,
-                        STANDARD_MOVE_MASK,
-                        pos,
-                        BITScanForward(x1),
-                        side,
-                        NO_PROMOTION,
-                        KING_BLACK + side))
+      else if (pushmove(listId, STANDARD_MOVE_MASK, pos, BITScanForward(x1), side, NO_PROMOTION, KING_BLACK + side))
         true
       else w1(resetLSB(x1))
 
@@ -1120,14 +876,13 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
 
     chessBoard.chessboard(RIGHT_CASTLE_IDX) = move.type1 & 0xf0
     if ((move.type1 & 0x3) == STANDARD_MOVE_MASK || (move.type1 & 0x3) == ENPASSANT_MOVE_MASK) {
-      val posTo = move.to
-      val posFrom = move.from
+      val posTo       = move.to
+      val posFrom     = move.from
       val movecapture = move.capturedPiece
       assert(posFrom >= 0 && posFrom < 64)
       assert(posTo >= 0 && posTo < 64)
       val pieceFrom = move.pieceFrom
-      chessBoard.chessboard(pieceFrom) = (chessBoard.chessboard(pieceFrom) & NOTPOW2(
-        posTo)) | POW2(posFrom)
+      chessBoard.chessboard(pieceFrom) = (chessBoard.chessboard(pieceFrom) & NOTPOW2(posTo)) | POW2(posFrom)
       if (movecapture != SQUARE_FREE) {
         if ((move.type1 & 0x3) != ENPASSANT_MOVE_MASK) {
           chessBoard.chessboard(movecapture) |= POW2(posTo)
@@ -1141,8 +896,8 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
         }
       }
     } else if ((move.type1 & 0x3) == PROMOTION_MOVE_MASK) {
-      val posTo = move.to
-      val posFrom = move.from
+      val posTo       = move.to
+      val posFrom     = move.from
       val movecapture = move.capturedPiece
       assert(posTo >= 0 && move.side >= 0 && move.promotionPiece >= 0)
       chessBoard.chessboard(move.side) |= POW2(posFrom)
@@ -1157,16 +912,14 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
 
   def makemove(move: _Tmove, rep: Boolean, checkInCheck: Boolean): Boolean = {
 
-    assert(
-      bitCount(chessBoard.chessboard(KING_WHITE)) == 1 && bitCount(
-        chessBoard.chessboard(KING_BLACK)) == 1)
-    var pieceFrom = SQUARE_FREE
+    assert(bitCount(chessBoard.chessboard(KING_WHITE)) == 1 && bitCount(chessBoard.chessboard(KING_BLACK)) == 1)
+    var pieceFrom   = SQUARE_FREE
     var movecapture = ' '
 
     val rightCastleOld = chessBoard.chessboard(RIGHT_CASTLE_IDX)
 
     if (0 == (move.type1 & 0xc)) { //no castle
-      val posTo = move.to
+      val posTo   = move.to
       val posFrom = move.from
       movecapture = move.capturedPiece
 
@@ -1180,8 +933,7 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
         chessBoard.chessboard(move.promotionPiece) |= POW2(posTo)
         chessBoard.updateZobristKey(move.promotionPiece, posTo)
       } else {
-        chessBoard.chessboard(pieceFrom) = (chessBoard.chessboard(pieceFrom) | POW2(
-          posTo)) & NOTPOW2(posFrom)
+        chessBoard.chessboard(pieceFrom) = (chessBoard.chessboard(pieceFrom) | POW2(posTo)) & NOTPOW2(posFrom)
         chessBoard.updateZobristKey(pieceFrom, posFrom)
         chessBoard.updateZobristKey(pieceFrom, posTo)
       }
@@ -1226,17 +978,13 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
         case PAWN_WHITE =>
           if (((RANK_1 & POW2(posFrom)) != 0) && ((RANK_3 & POW2(posTo)) != 0)) {
             chessBoard.chessboard(ENPASSANT_IDX) = posTo
-            chessBoard.updateZobristKey(
-              13,
-              chessBoard.chessboard(ENPASSANT_IDX).toInt)
+            chessBoard.updateZobristKey(13, chessBoard.chessboard(ENPASSANT_IDX).toInt)
           }
 
         case PAWN_BLACK =>
           if (((RANK_6 & POW2(posFrom)) != 0) && ((RANK_4 & POW2(posTo)) != 0)) {
             chessBoard.chessboard(ENPASSANT_IDX) = posTo
-            chessBoard.updateZobristKey(
-              13,
-              chessBoard.chessboard(ENPASSANT_IDX).toInt)
+            chessBoard.updateZobristKey(13, chessBoard.chessboard(ENPASSANT_IDX).toInt)
           }
         case _ =>
       }
@@ -1262,8 +1010,9 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
       }
       pushStackMove(chessBoard.chessboard(ZOBRISTKEY_IDX))
     }
-    if ((forceCheck || (checkInCheck && !perftMode)) && ((move.side == WHITE && inCheck(
-          WHITE)) || (move.side == BLACK && inCheck(BLACK))))
+    if ((forceCheck || (checkInCheck && !perftMode)) && ((move.side == WHITE && inCheck(WHITE)) || (move.side == BLACK && inCheck(
+          BLACK
+        ))))
       false
     else
       true
@@ -1279,26 +1028,20 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
 
   private def setRepetitionMapCount(i: Int): Unit = repetitionMapCount = i
 
-  private def getAttackers(side: Side,
-                           exitOnFirst: Boolean,
-                           position: Position,
-                           allpieces: Long): Long = {
+  private def getAttackers(side: Side, exitOnFirst: Boolean, position: Position, allpieces: Long): Long = {
     assert(position >= 0 && position < 64)
     assert(side == 0 || side == 1)
 
     ///knight
-    var attackers = KNIGHT_MASK(position) & chessBoard.chessboard(
-      KNIGHT_BLACK + (side ^ 1))
+    var attackers = KNIGHT_MASK(position) & chessBoard.chessboard(KNIGHT_BLACK + (side ^ 1))
     if (exitOnFirst && attackers != 0) 1
     else {
       ///king
-      attackers |= NEAR_MASK1(position) & chessBoard.chessboard(
-        KING_BLACK + (side ^ 1))
+      attackers |= NEAR_MASK1(position) & chessBoard.chessboard(KING_BLACK + (side ^ 1))
       if (exitOnFirst && attackers != 0) 1
       else {
         ///pawn
-        attackers |= PAWN_FORK_MASK(side)(position) & chessBoard.chessboard(
-          PAWN_BLACK + (side ^ 1))
+        attackers |= PAWN_FORK_MASK(side)(position) & chessBoard.chessboard(PAWN_BLACK + (side ^ 1))
         if (exitOnFirst && attackers != 0) 1
         else {
           ///bishop queen
@@ -1318,7 +1061,8 @@ case class GenMoves private (chessBoard: ChessBoard, perftMode: Boolean) {
 
           w(
             chessBoard.bitboards
-              .getDiagonalAntiDiagonal(position, allpieces) & enemies)
+              .getDiagonalAntiDiagonal(position, allpieces) & enemies
+          )
           enemies = chessBoard.chessboard(ROOK_BLACK + (side ^ 1)) | chessBoard
             .chessboard(QUEEN_BLACK + (side ^ 1))
 

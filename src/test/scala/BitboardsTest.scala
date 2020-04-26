@@ -1,7 +1,7 @@
 import com.github.gekomad.chessgengenerator.board.Bitboards
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class BitboardsTest extends FunSuite {
+class BitboardsTest extends AnyFunSuite {
 
   test("getDiagonalAntiDiagonal") {
     val a = Bitboards()

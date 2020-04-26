@@ -1,11 +1,20 @@
 import com.github.gekomad.chessgengenerator.board.Board._
 import com.github.gekomad.chessgengenerator.core.GenMoves
 import com.github.gekomad.chessgengenerator.core.GenMoves.{_Tmove, _TmoveP}
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class GenMovesTest extends FunSuite {
+class GenMovesTest extends AnyFunSuite {
 
-  case class _TmoveTest(promotionPiece: Int, pieceFrom: Int, capturedPiece: Int, from: Int, to: Int, side: Int, type1: Int, score: Int)
+  case class _TmoveTest(
+    promotionPiece: Int,
+    pieceFrom: Int,
+    capturedPiece: Int,
+    from: Int,
+    to: Int,
+    side: Int,
+    type1: Int,
+    score: Int
+  )
 
   object _TmoveTest {
     def apply(m: _Tmove): _TmoveTest =
@@ -62,10 +71,11 @@ class GenMovesTest extends FunSuite {
 
   test("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1") {
 
-    val g: GenMoves = GenMoves("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1", true).getOrElse(???)
-    val idList      = 0
-    val friends     = g.chessBoard.getBitmap(WHITE)
-    val enemies     = g.chessBoard.getBitmap(BLACK)
+    val g: GenMoves =
+      GenMoves("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1", true).getOrElse(???)
+    val idList  = 0
+    val friends = g.chessBoard.getBitmap(WHITE)
+    val enemies = g.chessBoard.getBitmap(BLACK)
     g.generateCaptures(idList, WHITE, enemies, friends)
     assert(g.getListSize(idList) == 8)
     g.generateMoves(idList, WHITE, friends | enemies)

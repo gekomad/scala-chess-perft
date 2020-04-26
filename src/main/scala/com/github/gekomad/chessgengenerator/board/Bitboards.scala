@@ -2,6 +2,7 @@ package com.github.gekomad.chessgengenerator.board
 import scala.annotation.tailrec
 import scala.collection.mutable.ArrayBuffer
 import com.github.gekomad.chessgengenerator.core.Def._
+
 object Bitboards {
 
   //Kindergarten
@@ -14,19 +15,16 @@ object Bitboards {
   }
 
   def apply(): Bitboard = {
-    val MAGIC_KEY_DIAG_ANTIDIAG: Long = 0x101010101010101L
-    val MAGIC_KEY_FILE_RANK: Long = 0x102040810204080L
-
-    val BITBOARD_DIAGONAL: Array[Array[Long]] = Array.ofDim[Long](64, 256)
+    val MAGIC_KEY_DIAG_ANTIDIAG: Long             = 0x101010101010101L
+    val MAGIC_KEY_FILE_RANK: Long                 = 0x102040810204080L
+    val BITBOARD_DIAGONAL: Array[Array[Long]]     = Array.ofDim[Long](64, 256)
     val BITBOARD_ANTIDIAGONAL: Array[Array[Long]] = Array.ofDim[Long](64, 256)
-    val BITBOARD_FILE: Array[Array[Long]] = Array.ofDim[Long](64, 256)
-    val BITBOARD_RANK: Array[Array[Long]] = Array.ofDim[Long](64, 256)
+    val BITBOARD_FILE: Array[Array[Long]]         = Array.ofDim[Long](64, 256)
+    val BITBOARD_RANK: Array[Array[Long]]         = Array.ofDim[Long](64, 256)
 
     case class _Ttmp() {
-      var MASK_BIT_SET_NOBOUND_TMP: Array[Array[Long]] =
-        Array.ofDim[Long](64, 64)
-      var MASK_BIT_SET_NOBOUND_COUNT_TMP: Array[Array[Long]] =
-        Array.ofDim[Long](64, 64)
+      var MASK_BIT_SET_NOBOUND_TMP: Array[Array[Long]]       = Array.ofDim[Long](64, 64)
+      var MASK_BIT_SET_NOBOUND_COUNT_TMP: Array[Array[Long]] = Array.ofDim[Long](64, 64)
     }
 
     val tmp_struct: _Ttmp = _Ttmp()
@@ -49,8 +47,7 @@ object Bitboards {
               if (r != 0)
                 MASK_BIT_SET(i)(j) |= (POW2(e) & r)
               else {
-                val r = (ANTIDIAGONAL(i) | POW2(i)) & (ANTIDIAGONAL(j) | POW2(
-                  j))
+                val r = (ANTIDIAGONAL(i) | POW2(i)) & (ANTIDIAGONAL(j) | POW2(j))
                 if (r != 0) {
                   MASK_BIT_SET(i)(j) |= (POW2(e) & r)
                 }
@@ -75,13 +72,11 @@ object Bitboards {
 
     (0 until 64).foreach { i =>
       (0 until 64).foreach { j =>
-        tmp_struct.MASK_BIT_SET_NOBOUND_COUNT_TMP(i)(j) =
-          bitCount(tmp_struct.MASK_BIT_SET_NOBOUND_TMP(i)(j))
+        tmp_struct.MASK_BIT_SET_NOBOUND_COUNT_TMP(i)(j) = bitCount(tmp_struct.MASK_BIT_SET_NOBOUND_TMP(i)(j))
       }
     }
 
-    def rankIdx(position: Int, allpieces: Long): Char =
-      ((allpieces >>> RANK_ATX8(position)) & 0xff).toChar
+    def rankIdx(position: Int, allpieces: Long): Char = ((allpieces >>> RANK_ATX8(position)) & 0xff).toChar
 
     def fileIdx(position: Int, allpieces: Long): Char =
       ((((allpieces & FILE_(position)) * MAGIC_KEY_FILE_RANK) >>> 56) & 0xff).toChar
@@ -92,11 +87,7 @@ object Bitboards {
     def antiDiagonalIdx(position: Int, allpieces: Long): Char =
       ((((allpieces & ANTIDIAGONAL(position)) * MAGIC_KEY_DIAG_ANTIDIAG) >>> 56) & 0xff).toChar
 
-    def combinations1(elems: Array[Long],
-                      len: Int,
-                      pos: Array[Int],
-                      depth: Int,
-                      margin: Int): Array[Long] = {
+    def combinations1(elems: Array[Long], len: Int, pos: Array[Int], depth: Int, margin: Int): Array[Long] = {
       val res = ArrayBuffer.empty[Long]
       if (depth >= len) {
         pos.indices.foreach(ii => res += elems(pos(ii)))
@@ -117,8 +108,7 @@ object Bitboards {
       }
     }
 
-    def combinations(elems: Array[Long], len: Int): Array[Long] =
-      combinations1(elems, len, new Array[Int](len), 0, 0)
+    def combinations(elems: Array[Long], len: Int): Array[Long] = combinations1(elems, len, new Array[Int](len), 0, 0)
 
     def getCombinationArr(elements: Array[Long]): Array[Long] = {
       val res = ArrayBuffer.empty[Long]
@@ -145,16 +135,16 @@ object Bitboards {
         val bound = BITScanReverse(q)
         if ((allpieces & POW2(bound)) != 0)
           POW2(bound)
-        else 0l
-      } else 0l
+        else 0L
+      } else 0L
     } | {
       val q = allpieces & MASK_BIT_UNSET_LEFT_DOWN(position)
       if (q != 0) {
         val bound = BITScanForward(q)
         if ((allpieces & POW2(bound)) != 0)
           POW2(bound)
-        else 0l
-      } else 0l
+        else 0L
+      } else 0L
     }
 
     def performDiagShift(position: Int, allpieces: Long): Long = {
@@ -185,11 +175,11 @@ object Bitboards {
     def performRankShift(position: Int, allpieces: Long): Long = {
       val q1: Long = allpieces & MASK_BIT_UNSET_RIGHT(position)
       val k: Long =
-        if (q1 != 0l)
+        if (q1 != 0L)
           tmp_struct.MASK_BIT_SET_NOBOUND_TMP(position)(BITScanForward(q1))
         else MASK_BIT_SET_ORIZ_LEFT(position)
       val q2 = allpieces & MASK_BIT_UNSET_LEFT(position)
-      k | (if (q2 != 0l)
+      k | (if (q2 != 0L)
              tmp_struct.MASK_BIT_SET_NOBOUND_TMP(position)(BITScanReverse(q2))
            else MASK_BIT_SET_ORIZ_RIGHT(position))
 
@@ -209,7 +199,7 @@ object Bitboards {
 
     def getCombination(e: Long): Array[Long] = {
       val elements = e
-      val res = ArrayBuffer.empty[Long]
+      val res      = ArrayBuffer.empty[Long]
 
       @tailrec
       def w(elements: Long): Unit =
@@ -224,31 +214,31 @@ object Bitboards {
     }
 
     def performRankCapture(position: Int, allpieces: Long): Long = {
-      val x = allpieces & RANK(position)
+      val x       = allpieces & RANK(position)
       val q: Long = x & MASK_BIT_UNSET_LEFT(position)
       if (q != 0 && ((allpieces & POW2(BITScanReverse(q))) != 0))
         POW2(BITScanReverse(q))
-      else 0l
+      else 0L
     } | {
       val x = allpieces & RANK(position)
       val q = x & MASK_BIT_UNSET_RIGHT(position)
       if (q != 0 && ((allpieces & POW2(BITScanForward(q))) != 0))
         POW2(BITScanForward(q))
-      else 0l
+      else 0L
     }
 
     def performColumnCapture(position: Int, allpieces: Long): Long = {
-      val x = allpieces & FILE_(position)
+      val x       = allpieces & FILE_(position)
       val q: Long = x & MASK_BIT_UNSET_UP(position)
       if (q != 0 && ((allpieces & POW2(BITScanReverse(q))) != 0))
         POW2(BITScanReverse(q))
-      else 0l
+      else 0L
     } | {
       val x = allpieces & FILE_(position)
       val q = x & MASK_BIT_UNSET_DOWN(position)
       if (q != 0 && ((allpieces & POW2(BITScanForward(q))) != 0))
         POW2(BITScanForward(q))
-      else 0l
+      else 0L
     }
 
     def performAntiDiagCapture(position: Int, allpieces: Long): Long = {
@@ -257,48 +247,52 @@ object Bitboards {
         val bound = BITScanReverse(q)
         if ((allpieces & POW2(bound)) != 0)
           POW2(bound)
-        else 0l
-      } else 0l
+        else 0L
+      } else 0L
     } | {
       val q = allpieces & MASK_BIT_UNSET_RIGHT_DOWN(position)
       if (q != 0) {
         val bound = BITScanForward(q)
         if ((allpieces & POW2(bound)) != 0)
           POW2(bound)
-        else 0l
+        else 0L
 
-      } else 0l
+      } else 0L
     }
 
     (0 until 64).foreach { pos =>
       getCombination(DIAGONAL(pos)).foreach { allpieces =>
-        BITBOARD_DIAGONAL(pos)(diagonalIdx(pos, allpieces)) = performDiagShift(
+        BITBOARD_DIAGONAL(pos)(diagonalIdx(pos, allpieces)) = performDiagShift(pos, allpieces) | performDiagCapture(
           pos,
-          allpieces) | performDiagCapture(pos, allpieces)
+          allpieces
+        )
       }
     }
 
     (0 until 64).foreach { pos =>
       getCombination(FILE_(pos)).foreach { allpieces =>
-        BITBOARD_FILE(pos)(fileIdx(pos, allpieces)) = performColumnShift(
+        BITBOARD_FILE(pos)(fileIdx(pos, allpieces)) = performColumnShift(pos, allpieces) | performColumnCapture(
           pos,
-          allpieces) | performColumnCapture(pos, allpieces)
+          allpieces
+        )
       }
     }
 
     (0 until 64).foreach { pos =>
       getCombination(RANK(pos)).foreach { allpieces =>
-        BITBOARD_RANK(pos)(rankIdx(pos, allpieces)) = performRankShift(
+        BITBOARD_RANK(pos)(rankIdx(pos, allpieces)) = performRankShift(pos, allpieces) | performRankCapture(
           pos,
-          allpieces) | performRankCapture(pos, allpieces)
+          allpieces
+        )
       }
     }
 
     (0 until 64).foreach { pos =>
       getCombination(ANTIDIAGONAL(pos)).foreach { allpieces =>
-        BITBOARD_ANTIDIAGONAL(pos)(antiDiagonalIdx(pos, allpieces)) = performAntiDiagShift(
+        BITBOARD_ANTIDIAGONAL(pos)(antiDiagonalIdx(pos, allpieces)) = performAntiDiagShift(pos, allpieces) | performAntiDiagCapture(
           pos,
-          allpieces) | performAntiDiagCapture(pos, allpieces)
+          allpieces
+        )
       }
     }
 
@@ -312,11 +306,9 @@ object Bitboards {
         //    ........            00010000
         //    ...Q....            00010000
         //    ........            00000000
-        BITBOARD_FILE(position)(fileIdx(position, allpieces)) | BITBOARD_RANK(
-          position)(rankIdx(position, allpieces))
+        BITBOARD_FILE(position)(fileIdx(position, allpieces)) | BITBOARD_RANK(position)(rankIdx(position, allpieces))
 
-      override def getDiagonalAntiDiagonal(position: Int,
-                                           allpieces: Long): Long =
+      override def getDiagonalAntiDiagonal(position: Int, allpieces: Long): Long =
         //    ........            00010000
         //    q.......            10100000
         //    .B......            00000000
