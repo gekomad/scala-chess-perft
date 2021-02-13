@@ -65,7 +65,7 @@ side to move: White
 19)        b1-c3   5708064
 20)        b1-a3   4856835
 
-Tot 119060324 nodes in 13 seconds (9158k nodes per seconds)
+Tot 119060324 nodes in 5 seconds (23812k nodes per seconds)
 ```  
 
 ## FP and Chess Programming
